@@ -1,5 +1,3 @@
-#still working on this
-
 def bubble_sort_by (array)
   sorted = false
   until sorted do
