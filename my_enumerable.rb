@@ -64,32 +64,35 @@ module Enumerable
 		none_true
 	end
 
-	def my_count
+	def my_count (value = nil)
 		count = 0
-		if block_given?
-			self.my_each do |x|
-				count +=1 if yield(x) == true
-			end
+		if value
+			self.my_each {|x| count += 1 if x == value}
+			return count
+		elsif block_given?
+			self.my_each {|x| count +=1 if yield(x) == true}
 			return count
 		else
-	end
-
-	def my_map
-		self.my_each_with_index do |x, index|
-			self[index] = yield(x)
+			return self.size
 		end
-		self
 	end
 
-	def my_map(&proc)
-		self.my_each_with_index do |x, index|
-			self[index] = proc.call(x)
-			self[index] = yield(x) if block_given?
+	def my_map(proc = nil)
+		unless proc
+			self.my_each_with_index do |x, index|
+				self[index] = yield(x)
+			end
+		else
+			self.my_each_with_index do |x, index|
+				self[index] = proc.call(x)
+				self[index] = yield(self[index]) if block_given?
+			end
 		end
 		self
 	end
 
 	def my_inject (initial = self.first)
+		return self unless block_given?
 		accumulator = initial
 		self.my_each do |x|
 			accumulator = yield(accumulator, x)
@@ -102,6 +105,12 @@ def multiply_els(array)
 	array.my_inject (1) {|running_multiple, element| running_multiple * element}
 end
 
+
+
+
+#Many test runs follow below
+
+
 #[1,2,3,4,5].my_each {|x| puts x}
 #["A","B","C","D","E"].my_each_with_index {|x, index| puts "#{x}, #{index}"}
 #puts [1,2,3,4,5].my_select {|x| x < 4}
@@ -111,7 +120,15 @@ end
 #p [1,2,3,4,5].my_inject {|running_total, x| running_total + x}
 #p multiply_els([20,2,-3])
 
-#test = Proc.new{|x| x ** 3}
-#puts [1,2,3,4,5].my_map(&test) {|y| y * 2}
 
-puts [false, false, true, false].my_all?
+#p [1,2,3,4,5].my_count
+#p [1,2,3,4,5].my_count(3)
+#p [1,2,3,4,5].my_count {|x| x > 2}
+
+
+#test = Proc.new{|z| z ** 3}
+#puts [1,2,3,4,5].my_map(test) {|y| y * 2}
+#puts [1,2,3,4,5].my_map(test)
+#puts [1,2,3,4,5].my_map {|y| y*2}
+
+#puts [false, false, true, false].my_all?
